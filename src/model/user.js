@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { JWT_SECRET } = require("../secret_key");
 
 const userSchema = new mongoose.Schema(
   {
@@ -53,6 +54,12 @@ const userSchema = new mongoose.Schema(
         },
       },
     ],
+    resetToken: {
+      type: String,
+    },
+    resetTokenExpiry: {
+      type: String,
+    },
   },
   {
     timestamps: true,
@@ -72,7 +79,7 @@ userSchema.methods.getAuthToken = async function () {
 
   user.tokens;
 
-  const token = jwt.sign({ _id: user._id.toString() }, "will2025");
+  const token = jwt.sign({ _id: user._id.toString() }, JWT_SECRET);
 
   user.tokens = user.tokens.concat({ token });
   await user.save();
