@@ -5,7 +5,7 @@ const bcrypt = require("bcrypt");
 const sgMail = require("@sendgrid/mail");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
-const auth = require("../middleware/auth")
+const auth = require("../middleware/auth");
 
 const {
   SENDGRID_API_KEY,
@@ -39,7 +39,7 @@ router.post("/forgot-password", async (req, res) => {
   user.resetTokenExpiry = Date.now() + 15 * 60 * 1000; // 15 minutes
   await user.save();
 
-  const resetLink = `${LAMBTON_FE}/reset-password?token=${token}`;
+  const resetLink = `${LAMBTON_FE}/reset-password/${token}`;
 
   const msg = {
     to: userName,
@@ -62,41 +62,38 @@ router.post("/forgot-password", async (req, res) => {
 });
 
 router.post("/reset-password", async (req, res) => {
-  const { token, newPassword } = req.body;
-
+  const { token, password } = req.body;
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await User.findOne({
       userName: decoded.userName,
-      resetToken: token,
     });
 
     if (!user || user.resetTokenExpiry < Date.now()) {
       return res.status(400).json({ message: "Invalid or expired token" });
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 8);
-    user.password = hashedPassword;
+    user.password = password;
     user.resetToken = "";
     user.resetTokenExpiry = null;
     await user.save();
 
     res.json({ message: "Password reset successfully" });
   } catch (error) {
+    console.log(error, "error");
     res.status(400).json({ message: "Invalid or expired token" });
   }
 });
 
 router.post("/logout", auth, async (req, res) => {
   try {
-    const user = req.user; 
-    const token = req.token; 
+    const user = req.user;
+    const token = req.token;
 
     if (!user) {
       return res.status(401).json({ error: "Unauthorized request" });
     }
 
-    
     user.tokens = user.tokens.filter((t) => t.token !== token);
     await user.save();
 
