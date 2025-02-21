@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 const sgMail = require("@sendgrid/mail");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
+const auth = require("../middleware/auth")
 
 const {
   SENDGRID_API_KEY,
@@ -86,4 +87,36 @@ router.post("/reset-password", async (req, res) => {
   }
 });
 
+router.post("/logout", auth, async (req, res) => {
+  try {
+    const user = req.user; 
+    const token = req.token; 
+
+    if (!user) {
+      return res.status(401).json({ error: "Unauthorized request" });
+    }
+
+    
+    user.tokens = user.tokens.filter((t) => t.token !== token);
+    await user.save();
+
+    res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({ error: "Logout failed. Please try again." });
+  }
+});
+
+router.post("/login", async (req, res) => {
+  try {
+    const user = await User.findByCredentials(
+      req.body.userName,
+      req.body.password
+    );
+    const token = await user.getAuthToken();
+    res.send({ user, token });
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+});
 module.exports = router;
