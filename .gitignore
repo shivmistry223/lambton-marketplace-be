@@ -1,1 +1,3 @@
 node_modules/
+src/secret_key.js
+.env
