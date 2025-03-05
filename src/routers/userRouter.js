@@ -117,31 +117,18 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.get("/user/:id", async (req, res) => {
-  const _id = req.params.id;
-
+router.get("/user", auth, async (req, res) => {
   try {
-    const user = await User.findById(_id);
-    if (!user) {
-      return res.status(404).send();
-    }
-    res.send(user);
+    res.send(req.user);
   } catch (err) {
     res.status(400).send(err.message);
   }
 });
 
-router.put("/user", async (req, res) => {
-  const allowableUpdates = [
-    "firstName",
-    "lastName",
-    "courseCode",
-    "termNo",
-    "phoneNumber",
-  ];
-
+router.put("/user", auth, async (req, res) => {
+  const allowableUpdates = ["fullName", "courseCode", "termNo", "phoneNumber"];
   try {
-    const user = await User.findById(req.body.id);
+    const user = await User.findById(req.user.id);
     allowableUpdates.forEach((key) => (user[key] = req.body[key]));
     await user.save();
     res.send(user);
@@ -150,33 +137,27 @@ router.put("/user", async (req, res) => {
   }
 });
 
-router.post("/reset-password", async (req, res) => {
-  const { id, oldPassword, newPassword, confirmPassword } = req.body;
+router.post("/profile-reset-password", auth, async (req, res) => {
+  const { oldPassword, newPassword, confirmPassword } = req.body;
 
   if (newPassword !== confirmPassword) {
     return res.status(400).send("Passwords do not match!");
   }
 
   try {
-    const user = await User.findById(id);
-    if (!user) {
-      return res.status(404).send("User not found!");
-    }
-
-    const isValid = await bcrypt.compare(oldPassword, user.password);
+    const isValid = await bcrypt.compare(oldPassword, req.user.password);
 
     if (!isValid) {
       throw new Error("Invalid Password");
     }
 
-    user.password = newPassword;
+    req.user.password = newPassword;
 
-    await user.save();
+    await req.user.save();
     res.send(true);
   } catch (err) {
     res.status(500).send(err.message);
   }
 });
-
 
 module.exports = router;
