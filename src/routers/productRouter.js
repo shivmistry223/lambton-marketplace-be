@@ -39,7 +39,7 @@ router.post(
   }
 );
 
-router.get("/product/:id", async (req, res) => {
+router.get("/product/:id", auth, async (req, res) => {
   const _id = req.params.id;
   try {
     const product = await Product.findOne({ _id })
@@ -80,7 +80,7 @@ router.patch(
   }
 );
 
-router.delete("/product/:id", async (req, res) => {
+router.delete("/product/:id", auth, async (req, res) => {
   try {
     const product = await Product.findOneAndDelete({
       _id: req.params.id,
@@ -102,5 +102,43 @@ router.delete("/product/:id", async (req, res) => {
     res.status(400).send();
   }
 });
+
+
+router.get("/product", auth, async (req, res) => {
+  try {
+    const { category, ownerId, page = 1, limit = 10 } = req.query;
+
+    let query = {};
+
+    if (category && category !== "all") {
+      query.productCatagory = category;
+    }
+
+    if (ownerId) {
+      query.productOwner = ownerId;
+    }
+
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+
+    const products = await Product.find(query)
+      .populate("productOwner")
+      .skip((pageNumber - 1) * limitNumber) 
+      .limit(limitNumber) 
+      .exec();
+
+    const totalCount = await Product.countDocuments(query);
+
+    res.send({
+      products,
+      totalPages: Math.ceil(totalCount / limitNumber),
+      currentPage: pageNumber,
+      totalCount,
+    });
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+});
+
 
 module.exports = router;
