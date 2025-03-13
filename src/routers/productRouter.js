@@ -103,10 +103,9 @@ router.delete("/product/:id", auth, async (req, res) => {
   }
 });
 
-
 router.get("/product", auth, async (req, res) => {
   try {
-    const { category, ownerId, page = 1, limit = 10 } = req.query;
+    const { category, ownerId, page = 1, limit = 10, search } = req.query;
 
     let query = {};
 
@@ -118,13 +117,17 @@ router.get("/product", auth, async (req, res) => {
       query.productOwner = ownerId;
     }
 
+    if (search) {
+      query.productName = { $regex: search, $options: "i" }; // Case-insensitive search
+    }
+
     const pageNumber = parseInt(page, 10);
     const limitNumber = parseInt(limit, 10);
 
     const products = await Product.find(query)
       .populate("productOwner")
-      .skip((pageNumber - 1) * limitNumber) 
-      .limit(limitNumber) 
+      .skip((pageNumber - 1) * limitNumber)
+      .limit(limitNumber)
       .exec();
 
     const totalCount = await Product.countDocuments(query);
@@ -139,6 +142,5 @@ router.get("/product", auth, async (req, res) => {
     res.status(500).send({ error: error.message });
   }
 });
-
 
 module.exports = router;
