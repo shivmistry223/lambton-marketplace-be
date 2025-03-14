@@ -6,7 +6,7 @@ const sgMail = require("@sendgrid/mail");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const auth = require("../middleware/auth");
-
+const Product = require("../model/product");
 const {
   SENDGRID_API_KEY,
   JWT_SECRET,
@@ -159,5 +159,20 @@ router.post("/profile-reset-password", auth, async (req, res) => {
     res.status(500).send(err.message);
   }
 });
+
+router.get("/owner/:id", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const products = await Product.find({ productOwner: req.params.id });
+
+    res.send({ user, products });
+  } catch (err) {
+    res.status(500).json({ message: "Server Error", error: err.message });
+  }
+});
+
 
 module.exports = router;
