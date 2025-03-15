@@ -120,7 +120,7 @@ router.delete("/product/:id", auth, async (req, res) => {
 
 router.get("/product", auth, async (req, res) => {
   try {
-    const { category, ownerId, page = 1, limit = 10 } = req.query;
+    const { category, ownerId, page = 1, limit = 10, search } = req.query;
 
     let query = {};
 
@@ -130,6 +130,10 @@ router.get("/product", auth, async (req, res) => {
 
     if (ownerId) {
       query.productOwner = ownerId;
+    }
+
+    if (search) {
+      query.productName = { $regex: search, $options: "i" }; // Case-insensitive search
     }
 
     const pageNumber = parseInt(page, 10);
