@@ -59,7 +59,6 @@ router.patch(
   auth,
   upload.single("productImage"),
   async (req, res) => {
-    console.log("Hellpp");
     try {
       const product = await Product.findById(req.params.id);
       if (!product) {
@@ -79,6 +78,22 @@ router.patch(
     }
   }
 );
+
+router.post("/update-payment-status", auth, async (req, res) => {
+  try {
+    const id = req.body.orderId;
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    Object.assign(product, { isSold: true });
+    await product.save();
+    res.json({ message: "Updated successfully!", product });
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+});
 
 router.delete("/product/:id", auth, async (req, res) => {
   try {
