@@ -128,7 +128,7 @@ router.get("/user", auth, async (req, res) => {
 router.put("/user", auth, async (req, res) => {
   const allowableUpdates = ["fullName", "courseCode", "termNo", "phoneNumber"];
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user._id);
     allowableUpdates.forEach((key) => (user[key] = req.body[key]));
     await user.save();
     res.send(user);
@@ -173,6 +173,5 @@ router.get("/owner/:id", auth, async (req, res) => {
     res.status(500).json({ message: "Server Error", error: err.message });
   }
 });
-
 
 module.exports = router;
