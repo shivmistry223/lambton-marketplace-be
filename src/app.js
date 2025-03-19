@@ -4,6 +4,7 @@ const userRouter = require("./routers/userRouter");
 const productRouter = require("./routers/productRouter");
 const paymentRouter = require("./routers/paymentRouter");
 const webhookRouter = require("./routers/webhookRouter");
+const reviewRouter = require("./routers/reviewRouter");
 
 require("./db/mongoose");
 
@@ -25,6 +26,7 @@ const port = process.env.PORT || 5000;
 app.use(userRouter);
 app.use(productRouter);
 app.use(paymentRouter);
+app.use(reviewRouter);
 
 app.listen(port, () => {
   console.log("Server started on " + port);
