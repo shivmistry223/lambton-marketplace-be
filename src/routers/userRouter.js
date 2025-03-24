@@ -113,7 +113,7 @@ router.post("/login", async (req, res) => {
     const token = await user.getAuthToken();
     res.send({ user, token });
   } catch (error) {
-    res.status(400).send(error.message);
+    res.status(400).send({ error: error.message });
   }
 });
 
@@ -121,7 +121,7 @@ router.get("/user", auth, async (req, res) => {
   try {
     res.send(req.user);
   } catch (err) {
-    res.status(400).send(err.message);
+    res.status(400).send({ error: err.message });
   }
 });
 
@@ -141,7 +141,7 @@ router.post("/profile-reset-password", auth, async (req, res) => {
   const { oldPassword, newPassword, confirmPassword } = req.body;
 
   if (newPassword !== confirmPassword) {
-    return res.status(400).send("Passwords do not match!");
+    return res.status(400).send({ error: "Passwords do not match!" });
   }
 
   try {
@@ -156,7 +156,7 @@ router.post("/profile-reset-password", auth, async (req, res) => {
     await req.user.save();
     res.send(true);
   } catch (err) {
-    res.status(500).send(err.message);
+    res.status(500).send({ error: err.message });
   }
 });
 

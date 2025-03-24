@@ -4,7 +4,6 @@ const upload = require("../utils/uploadFile");
 const router = new express.Router();
 const fs = require("fs");
 const path = require("path");
-const User = require("../model/user");
 const auth = require("../middleware/auth");
 
 router.post(
@@ -120,9 +119,9 @@ router.delete("/product/:id", auth, async (req, res) => {
 
 router.get("/product", auth, async (req, res) => {
   try {
-    const { category, ownerId, page = 1, limit = 10, search } = req.query;
+    const { category, ownerId, page = 1, limit = 8, search } = req.query;
 
-    let query = {};
+    let query = { isSold: false };
 
     if (category && category !== "all") {
       query.productCatagory = category;
@@ -130,6 +129,7 @@ router.get("/product", auth, async (req, res) => {
 
     if (ownerId) {
       query.productOwner = ownerId;
+      delete query.isSold;
     }
 
     if (search) {
