@@ -21,7 +21,7 @@ router.post("/create-payment-intent", auth, async (req, res) => {
       line_items: lineItems,
       mode: "payment",
       success_url: `${LAMBTON_FE}/payment?id=${id}&&paymentStatus=success`,
-      cancel_url: `${LAMBTON_FE}/payment?id=${id}&&paymentStatus=failed`,
+      cancel_url: `${LAMBTON_FE}/product-detail/${id}`,
     });
 
     const payment = new Payment({
@@ -42,7 +42,10 @@ router.post("/create-payment-intent", auth, async (req, res) => {
 
 router.get("/get-payment-list", auth, async (req, res) => {
   try {
-    const payments = await Payment.find()
+    const payments = await Payment.find({
+      user: req.user.id,
+      paymentStatus: "success",
+    })
       .populate("user", "fullName")
       .populate("product", "productName")
       .sort({ createdAt: -1 });
