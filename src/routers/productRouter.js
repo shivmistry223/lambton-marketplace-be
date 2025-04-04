@@ -143,6 +143,7 @@ router.get("/product", auth, async (req, res) => {
       .populate("productOwner")
       .skip((pageNumber - 1) * limitNumber)
       .limit(limitNumber)
+      .sort({ createdAt: -1 })
       .exec();
 
     const totalCount = await Product.countDocuments(query);

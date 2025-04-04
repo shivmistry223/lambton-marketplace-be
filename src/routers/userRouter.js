@@ -46,9 +46,11 @@ router.post("/forgot-password", async (req, res) => {
     from: SENDER_EMAIL,
     subject: "Password Reset Request",
     html: `
-      <p>You requested a password reset.</p>
-      <p>Click <a href="${resetLink}">here</a> to reset your password.</p>
-      <p>This link expires in 15 minutes.</p>
+      <p>We received a request to reset your password.</p>  
+<p>If you initiated this request, please click <a href="${resetLink}">here</a> to reset your password.</p>  
+<p>This link will expire in 15 minutes for security reasons.</p>  
+<p>If you did not request a password reset, please ignore this email.</p>  
+
     `,
   };
 
